@@ -9,4 +9,4 @@ A fast web proxy built for the Eclipse Suite.
 - Free to run on Cloudflare's free tier
 
 ## Part of the Eclipse Suite
-Built by **Mizzery** — [github.com/xXmizzeryXx](https://github.com/xXmizzeryXx)
+Built by **Mizzery** — [GitHub](https://github.com/xXmizzeryXx)
