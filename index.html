@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flux</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root {
+  --bg: #050508;
+  --bg2: #0a0a14;
+  --cyan: #00f5ff;
+  --pink: #ff006e;
+  --purple: #bf00ff;
+  --green: #00ff88;
+  --text: #e0e8ff;
+  --muted: #4a5068;
+  --border: rgba(0,245,255,0.12);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  display: flex; flex-direction: column;
+  height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,245,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,245,255,0.02) 1px, transparent 1px);
+  background-size: 52px 52px;
+  pointer-events: none; z-index: 0;
+}
+
+.top-bar {
+  position: relative; z-index: 10;
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px; height: 52px;
+  background: rgba(5,5,8,0.95);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.btn-home {
+  display: flex; align-items: center; gap: 6px;
+  text-decoration: none; font-family: 'Orbitron', monospace;
+  font-size: 8px; letter-spacing: 2px; color: var(--muted);
+  border: 1px solid rgba(0,245,255,0.1); border-radius: 4px;
+  padding: 6px 11px; transition: all .2s; white-space: nowrap; flex-shrink: 0;
+}
+.btn-home:hover { color: var(--cyan); border-color: rgba(0,245,255,0.35); }
+
+.url-bar-wrap {
+  flex: 1; display: flex; align-items: center;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 0 14px;
+  transition: border-color .25s, box-shadow .25s;
+  height: 36px;
+}
+.url-bar-wrap:focus-within {
+  border-color: rgba(0,245,255,0.4);
+  box-shadow: 0 0 20px rgba(0,245,255,0.06);
+}
+.url-icon { color: var(--muted); font-size: 12px; flex-shrink: 0; margin-right: 10px; transition: color .2s; }
+.url-bar-wrap:focus-within .url-icon { color: var(--cyan); }
+#urlInput {
+  flex: 1; background: transparent; border: none; outline: none;
+  color: var(--text); font-family: 'Rajdhani', sans-serif;
+  font-size: 14px; letter-spacing: .3px;
+}
+#urlInput::placeholder { color: var(--muted); }
+.url-go-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); font-size: 13px; padding: 2px 4px;
+  transition: color .2s; flex-shrink: 0; margin-left: 8px;
+}
+.url-go-btn:hover { color: var(--cyan); }
+
+.sw-pill {
+  display: flex; align-items: center; gap: 6px;
+  font-family: 'Orbitron', monospace; font-size: 7px; letter-spacing: 2px;
+  padding: 5px 10px; border-radius: 3px; border: 1px solid rgba(0,245,255,0.15);
+  color: var(--muted); white-space: nowrap; flex-shrink: 0;
+  background: rgba(0,245,255,0.02);
+}
+.sw-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--muted); }
+.sw-pill.ready { color: var(--green); border-color: rgba(0,255,136,0.25); }
+.sw-pill.ready .sw-dot { background: var(--green); box-shadow: 0 0 6px var(--green); animation: blink 2s infinite; }
+.sw-pill.error { color: var(--pink); border-color: rgba(255,0,110,0.25); }
+.sw-pill.error .sw-dot { background: var(--pink); }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.3} }
+
+.flux-logo {
+  font-family: 'Orbitron', monospace; font-weight: 900;
+  font-size: 14px; letter-spacing: 4px; color: var(--cyan);
+  text-shadow: 0 0 16px rgba(0,245,255,0.4); flex-shrink: 0;
+}
+
+.proxy-frame {
+  flex: 1; width: 100%; border: none; background: #000;
+  display: block; position: relative; z-index: 1;
+}
+
+.splash {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  position: relative; z-index: 1; gap: 0;
+  animation: fadeUp .5s ease both;
+}
+.splash-logo {
+  font-family: 'Orbitron', monospace; font-weight: 900;
+  font-size: clamp(3rem, 8vw, 6rem);
+  letter-spacing: 12px; color: var(--cyan);
+  text-shadow: 0 0 60px rgba(0,245,255,0.4), 0 0 120px rgba(0,245,255,0.15);
+  margin-bottom: 10px;
+}
+.splash-sub {
+  font-family: 'Orbitron', monospace; font-size: 9px;
+  letter-spacing: 5px; color: var(--muted); margin-bottom: 52px;
+}
+.splash-hint {
+  font-size: 13px; color: var(--muted); letter-spacing: 1px;
+  display: flex; align-items: center; gap: 8px;
+}
+.splash-hint kbd {
+  font-family: 'Orbitron', monospace; font-size: 8px; letter-spacing: 1px;
+  padding: 4px 8px; border: 1px solid rgba(0,245,255,0.2);
+  border-radius: 4px; color: var(--cyan); background: rgba(0,245,255,0.04);
+}
+
+.setup-notice {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10,10,20,0.97); border: 1px solid rgba(191,0,255,0.3);
+  border-radius: 10px; padding: 18px 28px; z-index: 100;
+  font-size: 13px; color: var(--text); max-width: 480px; width: 90%;
+  display: none; text-align: center;
+}
+.setup-notice.visible { display: block; animation: fadeUp .3s ease both; }
+.setup-notice strong { color: var(--purple); }
+.setup-input-row { display: flex; gap: 8px; margin-top: 14px; }
+.setup-input {
+  flex: 1; background: rgba(191,0,255,0.04); border: 1px solid rgba(191,0,255,0.2);
+  border-radius: 6px; padding: 9px 12px; color: var(--text);
+  font-family: 'Rajdhani', sans-serif; font-size: 13px; outline: none;
+}
+.setup-input:focus { border-color: rgba(191,0,255,0.5); }
+.setup-input::placeholder { color: var(--muted); }
+.setup-save-btn {
+  font-family: 'Orbitron', monospace; font-size: 8px; letter-spacing: 2px;
+  padding: 9px 16px; border-radius: 6px; cursor: pointer;
+  border: 1px solid rgba(191,0,255,0.35);
+  background: rgba(191,0,255,0.1); color: var(--purple); transition: all .2s;
+}
+.setup-save-btn:hover { border-color: var(--purple); box-shadow: 0 0 14px rgba(191,0,255,0.2); }
+.setup-close { position: absolute; top: 10px; right: 12px; background: none; border: none; cursor: pointer; color: var(--muted); font-size: 14px; }
+
+.loading-bar {
+  position: fixed; top: 52px; left: 0; right: 0; height: 2px; z-index: 20;
+  background: transparent; overflow: hidden;
+}
+.loading-bar-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--cyan), var(--purple));
+  transition: width .3s ease; border-radius: 0 2px 2px 0;
+}
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)} }
+
+.toast {
+  position: fixed; bottom: 28px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: rgba(10,10,20,.97); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 22px;
+  font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 2px;
+  color: var(--cyan); z-index: 9999;
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1); white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.err { border-color: rgba(255,0,110,.3); color: var(--pink); }
+.toast.ok  { border-color: rgba(0,255,136,.3); color: var(--green); }
+</style>
+</head>
+<body>
+
+<div class="loading-bar"><div class="loading-bar-fill" id="loadBar"></div></div>
+<div class="toast" id="toast"></div>
+
+<div class="top-bar">
+  <a href="index.html" class="btn-home"><i class="fa-solid fa-chevron-left"></i> HOME</a>
+  <div class="flux-logo">FLUX</div>
+  <div class="url-bar-wrap">
+    <i class="fa-solid fa-globe url-icon" id="urlIcon"></i>
+    <input type="text" id="urlInput" placeholder="Enter a URL or search..." autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off"/>
+    <button class="url-go-btn" id="goBtn" onclick="navigate()"><i class="fa-solid fa-arrow-right"></i></button>
+  </div>
+  <div class="sw-pill" id="swPill">
+    <div class="sw-dot"></div>
+    <span id="swLabel">LOADING</span>
+  </div>
+</div>
+
+<div class="splash" id="splash">
+  <div class="splash-logo">FLUX</div>
+  <div class="splash-sub">
+  <div class="splash-hint"><kbd>ENTER</kbd> a URL above to begin</div>
+</div>
+
+<iframe class="proxy-frame" id="proxyFrame" src="" style="display:none" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-top-navigation"></iframe>
+
+<div class="setup-notice" id="setupNotice">
+  <button class="setup-close" onclick="closeSetup()"><i class="fa-solid fa-xmark"></i></button>
+  <strong>Flux Worker URL needed</strong><br>
+  Enter your deployed Cloudflare Worker URL to enable proxying.
+  <div class="setup-input-row">
+    <input type="text" class="setup-input" id="workerInput" placeholder="https://flux-worker.yourname.workers.dev"/>
+    <button class="setup-save-btn" onclick="saveWorkerUrl()">SAVE</button>
+  </div>
+</div>
+
+<script>
+const SW_PATH = '/flux-sw.js';
+const SEARCH_ENGINE = 'https://www.google.com/search?q=';
+
+let swReady = false;
+const workerUrl = 'https://flux-worker.eclipseservice.workers.dev';
+
+const urlInput = document.getElementById('urlInput');
+const proxyFrame = document.getElementById('proxyFrame');
+const splash = document.getElementById('splash');
+const loadBar = document.getElementById('loadBar');
+
+urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') navigate(); });
+urlInput.focus();
+
+function setPill(state, label) {
+  const pill = document.getElementById('swPill');
+  pill.className = 'sw-pill' + (state ? ' ' + state : '');
+  document.querySelector('.sw-dot').className = 'sw-dot';
+  document.getElementById('swLabel').textContent = label;
+}
+
+async function initSW() {
+  if (!('serviceWorker' in navigator)) {
+    setPill('error', 'SW N/A'); return false;
+  }
+  try {
+    const reg = await navigator.serviceWorker.register(SW_PATH, { scope: '/' });
+    await navigator.serviceWorker.ready;
+
+    await postSW({ type: 'SET_WORKER', workerUrl });
+    swReady = true;
+    setPill('ready', 'READY');
+    return true;
+  } catch(e) {
+    setPill('error', 'SW FAILED');
+    console.error('Flux SW error:', e);
+    return false;
+  }
+}
+
+function postSW(msg) {
+  return new Promise((res, rej) => {
+    const sw = navigator.serviceWorker.controller;
+    if (!sw) return rej(new Error('No SW controller'));
+    const mc = new MessageChannel();
+    mc.port1.onmessage = e => res(e.data);
+    sw.postMessage(msg, [mc.port2]);
+    setTimeout(() => rej(new Error('timeout')), 5000);
+  });
+}
+
+function saveWorkerUrl() {
+  const val = document.getElementById('workerInput').value.trim().replace(/\/$/, '');
+  if (!val.startsWith('http')) { showToast('INVALID URL', 'err'); return; }
+  workerUrl = val;
+  localStorage.setItem('flux-worker-url', val);
+  closeSetup();
+  initSW();
+}
+
+function closeSetup() {
+  document.getElementById('setupNotice').classList.remove('visible');
+}
+
+function normalize(input) {
+  input = input.trim();
+  if (!input) return null;
+  if (input.startsWith('http://') || input.startsWith('https://')) return input;
+  if (/^[\w-]+\.[\w.]{2,}/.test(input) && !input.includes(' ')) return 'https://' + input;
+  return SEARCH_ENGINE + encodeURIComponent(input);
+}
+
+function navigate() {
+  if (!swReady) {
+    showToast('SW NOT READY — TRY AGAIN', 'err');
+    return;
+  }
+
+  const input = urlInput.value.trim();
+  if (!input) return;
+
+  const target = normalize(input);
+  if (!target) return;
+
+  const proxyPath = '/proxy/' + encodeURIComponent(target);
+
+  splash.style.display = 'none';
+  proxyFrame.style.display = 'block';
+  proxyFrame.src = '';
+
+  loadBar.style.width = '0%';
+  setTimeout(() => { loadBar.style.width = '60%'; }, 50);
+
+  proxyFrame.onload = () => {
+    loadBar.style.width = '100%';
+    setTimeout(() => { loadBar.style.width = '0%'; }, 400);
+    document.getElementById('urlIcon').className = 'fa-solid fa-lock url-icon';
+  };
+
+  setTimeout(() => { proxyFrame.src = proxyPath; }, 30);
+  urlInput.value = target;
+}
+
+let toastTimer;
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast' + (type ? ' ' + type : '');
+  void t.offsetWidth; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+initSW();
+</script>
+</body>
+</html>
