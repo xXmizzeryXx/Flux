@@ -215,7 +215,7 @@ body::before {
   <div class="splash-hint"><kbd>ENTER</kbd> a URL above to begin</div>
 </div>
 
-<iframe class="proxy-frame" id="proxyFrame" src="" style="display:none" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-top-navigation"></iframe>
+<iframe class="proxy-frame" id="proxyFrame" src="" style="display:none" sandbox="allow-scripts allow-forms allow-popups allow-modals allow-top-navigation"></iframe>
 
 <div class="setup-notice" id="setupNotice">
   <button class="setup-close" onclick="closeSetup()"><i class="fa-solid fa-xmark"></i></button>
@@ -256,6 +256,13 @@ async function initSW() {
   try {
     const reg = await navigator.serviceWorker.register(SW_PATH, { scope: '/' });
     await navigator.serviceWorker.ready;
+
+    if (!navigator.serviceWorker.controller) {
+      await new Promise(r => {
+        navigator.serviceWorker.addEventListener('controllerchange', r, { once: true });
+        setTimeout(r, 3000);
+      });
+    }
 
     await postSW({ type: 'SET_WORKER', workerUrl });
     swReady = true;
