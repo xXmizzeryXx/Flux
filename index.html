@@ -238,12 +238,18 @@ async function initSW() {
         if (!navigator.serviceWorker.controller) {
             await new Promise(r => {
                 navigator.serviceWorker.addEventListener('controllerchange', r, { once: true });
-                setTimeout(r, 3000);
+                setTimeout(r, 4000);
             });
         }
 
-        await new Promise(r => setTimeout(r, 500));
-        await postSW({ type: 'SET_WORKER', workerUrl: WORKER_URL });
+        await new Promise(r => setTimeout(r, 800));
+
+        try {
+            await postSW({ type: 'SET_WORKER', workerUrl: WORKER_URL });
+        } catch {
+            await new Promise(r => setTimeout(r, 1000));
+            await postSW({ type: 'SET_WORKER', workerUrl: WORKER_URL });
+        }
 
         swReady = true;
         setPill('ready', 'READY');
@@ -275,9 +281,9 @@ function navigate() {
 
     const proxyPath = '/proxy/' + encodeURIComponent(target);
 
-    splash.style.display   = 'none';
+    splash.style.display     = 'none';
     proxyFrame.style.display = 'block';
-    proxyFrame.src = '';
+    proxyFrame.src           = '';
 
     loadBar.style.width = '0%';
     setTimeout(() => { loadBar.style.width = '60%'; }, 50);
